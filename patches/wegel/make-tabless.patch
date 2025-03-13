@@ -1,0 +1,32 @@
+--- a/chrome/browser/ui/browser_navigator.cc	2025-02-25 14:55:16.000000000 -0500
++++ b/chrome/browser/ui/browser_navigator.cc	2025-03-13 13:04:56.680973844 -0400
+@@ -734,6 +734,16 @@
+   // later if needed.
+   int singleton_index;
+ 
++
++  // WEGEL: Force all new tabs to open in new windows
++  if (params->disposition != WindowOpenDisposition::CURRENT_TAB && 
++      params->disposition != WindowOpenDisposition::NEW_WINDOW &&
++      params->disposition != WindowOpenDisposition::NEW_PICTURE_IN_PICTURE) {
++    params->disposition = WindowOpenDisposition::NEW_WINDOW;
++    params->transition = ui::PAGE_TRANSITION_LINK;
++    params->window_action = NavigateParams::SHOW_WINDOW;
++  }
++
+ #if !BUILDFLAG(IS_ANDROID)
+   std::unique_ptr<web_app::NavigationCapturingProcess> app_navigation =
+       web_app::NavigationCapturingProcess::MaybeHandleAppNavigation(*params);
+--- a/chrome/browser/ui/views/frame/browser_view.cc	2025-03-13 14:29:40.261113330 -0400
++++ b/chrome/browser/ui/views/frame/browser_view.cc	2025-03-13 14:21:27.106917532 -0400
+@@ -1340,6 +1340,10 @@
+ bool BrowserView::ShouldDrawTabStrip() const {
+   // Return false if this window does not normally display a tabstrip or if the
+   // tabstrip is currently hidden, e.g. because we're in fullscreen.
++
++  //WEGEL: tabless
++  return false;
++
+   if (!browser_->SupportsWindowFeature(Browser::FEATURE_TABSTRIP)) {
+     return false;
+   }
